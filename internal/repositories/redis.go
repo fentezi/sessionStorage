@@ -35,3 +35,12 @@ func (r *Redis) DeleteSession(uuid string) error {
 	}
 	return nil
 }
+
+func (r *Redis) GetTimeKey(uuid string) (time.Duration, error) {
+	ttl := config.RDB.TTL(ctx, uuid)
+	if ttl.Err() != nil {
+		return time.Duration(0), ttl.Err()
+	}
+	return ttl.Val(), nil
+
+}

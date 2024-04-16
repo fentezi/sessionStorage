@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,15 +12,20 @@ import (
 
 func SessionMiddleware(repo *repostirories.Repositories) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		cookie, err := c.Request.Cookie("session_id")
-		if err != nil || cookie.Value == "" {
+		cookie, err := c.Cookie("session_id")
+		if err != nil || cookie == "" {
 			c.Status(http.StatusUnauthorized)
 			c.Abort()
 			return
 		}
-		log.Println(cookie.MaxAge)
-		if shouldExtendSession(cookie.MaxAge) {
-			uuid := cookie.Value
+		timeSession, err := repo.Redis.GetTimeKey(cookie)
+		if err != nil || timeSession == -2 {
+			c.Status(http.StatusUnauthorized)
+			c.Abort()
+			return
+		}
+		if shouldExtendSession(timeSession) {
+			uuid := cookie
 			userID, err := repo.Redis.GetSession(uuid)
 			if err != nil {
 				c.Status(http.StatusUnauthorized)
@@ -47,6 +51,6 @@ func SessionMiddleware(repo *repostirories.Repositories) gin.HandlerFunc {
 	}
 }
 
-func shouldExtendSession(maxAge int) bool {
-	return 2*time.Minute > time.Duration(maxAge*int(time.Second))
+func shouldExtendSession(timeSession time.Duration) bool {
+	return timeSession < 2*time.Minute
 }

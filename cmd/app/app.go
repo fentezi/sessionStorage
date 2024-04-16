@@ -25,7 +25,7 @@ func main() {
 	controller := controllers.NewAuthorizedController(serv)
 	r := gin.Default()
 	r.POST("/signup", controller.SignUp)
-	r.POST("/signin", controller.SignIn)
+	r.POST("/signin", middlewares.SignInMiddleware(repo), controller.SignIn)
 	r.GET("/", middlewares.SessionMiddleware(repo), controller.Home)
 
 	r.Run(config.Server.Host + ":" + config.Server.Port)

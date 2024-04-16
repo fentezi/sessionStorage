@@ -61,14 +61,6 @@ func (a *AuthorizedController) SignIn(c *gin.Context) {
 		})
 		return
 	}
-	c.SetCookie(
-		"session_id",
-		uuid,
-		600,
-		"/",
-		"localhost",
-		false,
-		true,
-	)
+	c.SetCookie("session_id", uuid, 600, "/", "localhost", false, true)
 	c.Status(http.StatusOK)
 }
